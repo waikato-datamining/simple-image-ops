@@ -16,6 +16,9 @@ INTERPOLATIONS = [
 ]
 
 
+PILLOW_USE_RESAMPLING = None
+
+
 def _determine_dims(img_width: int, img_height: int, width: Union[int, str], height: Union[int, str]) -> Tuple[int, int]:
     """
     Determines the actual dimensions to use from the specified width/height.
@@ -77,16 +80,35 @@ def resize(img: Any, width: Union[int, str] = KEEP_ASPECT_RATIO, height: Union[i
 
     if pillow_available():
         from PIL import Image
-        if interpolation == INTERPOLATION_LINEAR:
-            _interpolation = Image.Resampling.BILINEAR
-        elif interpolation == INTERPOLATION_NEAREST:
-            _interpolation = Image.Resampling.NEAREST
-        elif interpolation == INTERPOLATION_CUBIC:
-            _interpolation = Image.Resampling.BICUBIC
-        elif interpolation == INTERPOLATION_LANCZOS:
-            _interpolation = Image.Resampling.LANCZOS
+        global PILLOW_USE_RESAMPLING
+        if PILLOW_USE_RESAMPLING is None:
+            try:
+                import PIL.Image.Resampling
+                PILLOW_USE_RESAMPLING = True
+            except:
+                PILLOW_USE_RESAMPLING = False
+        if PILLOW_USE_RESAMPLING:
+            if interpolation == INTERPOLATION_LINEAR:
+                _interpolation = Image.Resampling.BILINEAR
+            elif interpolation == INTERPOLATION_NEAREST:
+                _interpolation = Image.Resampling.NEAREST
+            elif interpolation == INTERPOLATION_CUBIC:
+                _interpolation = Image.Resampling.BICUBIC
+            elif interpolation == INTERPOLATION_LANCZOS:
+                _interpolation = Image.Resampling.LANCZOS
+            else:
+                raise Exception("Unhandled interpolation: %s" % interpolation)
         else:
-            raise Exception("Unhandled interpolation: %s" % interpolation)
+            if interpolation == INTERPOLATION_LINEAR:
+                _interpolation = Image.BILINEAR
+            elif interpolation == INTERPOLATION_NEAREST:
+                _interpolation = Image.NEAREST
+            elif interpolation == INTERPOLATION_CUBIC:
+                _interpolation = Image.BICUBIC
+            elif interpolation == INTERPOLATION_LANCZOS:
+                _interpolation = Image.LANCZOS
+            else:
+                raise Exception("Unhandled interpolation: %s" % interpolation)
         img_width, img_height = img.size
         new_width, new_height = _determine_dims(img_width, img_height, width, height)
         return img.resize((new_width, new_height), _interpolation)
