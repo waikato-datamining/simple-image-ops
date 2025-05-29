@@ -1,5 +1,6 @@
 # simple-image-ops
-Python3 library for simple image operations either using OpenCV or Pillow.
+Python3 library for simple image operations either using [OpenCV](https://github.com/opencv/opencv-python) 
+or [Pillow](https://github.com/python-pillow/Pillow).
 
 
 ## Installation
