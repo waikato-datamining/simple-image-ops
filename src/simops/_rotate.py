@@ -2,6 +2,8 @@ from typing import Any
 
 from ._utils import opencv_available, pillow_available, raise_missing_image_library
 
+PILLOW_USE_TRANSPOSE = None
+
 
 def rotate(img: Any, degrees: int) -> Any:
     """
@@ -29,6 +31,27 @@ def rotate(img: Any, degrees: int) -> Any:
             return cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
 
     if pillow_available():
-        return img.rotate(degrees)
+        from PIL import Image
+        global PILLOW_USE_TRANSPOSE
+        if PILLOW_USE_TRANSPOSE is None:
+            try:
+                import PIL.Image.Transpose
+                PILLOW_USE_TRANSPOSE = True
+            except:
+                PILLOW_USE_TRANSPOSE = False
+        if PILLOW_USE_TRANSPOSE:
+            if degrees == 90:
+                return img.transpose(Image.Transpose.ROTATE_90)
+            elif degrees == 180:
+                return img.transpose(Image.Transpose.ROTATE_180)
+            else:
+                return img.transpose(Image.Transpose.ROTATE_270)
+        else:
+            if degrees == 90:
+                return img.transpose(Image.ROTATE_90)
+            elif degrees == 180:
+                return img.transpose(Image.ROTATE_180)
+            else:
+                return img.transpose(Image.ROTATE_270)
 
     raise_missing_image_library()
