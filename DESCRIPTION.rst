@@ -12,3 +12,4 @@ Supported image operations:
 * flip
 * resize
 * rotate
+
